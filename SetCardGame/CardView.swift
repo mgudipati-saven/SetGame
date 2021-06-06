@@ -12,18 +12,16 @@ struct CardView: View {
 
   var body: some View {
     ZStack {
-      RoundedRectangle(cornerRadius: 10).fill(Color.white)
-      RoundedRectangle(cornerRadius: 10).stroke(Color(.systemGray))
+      RoundedRectangle(cornerRadius: 10)
+        .stroke(DrawingConstants.borderColor, lineWidth: 1)
+
+      RoundedRectangle(cornerRadius: 10)
+        .fill(fillColor)
+
       VStack {
-        ForEach(1..<card.number.rawValue+1) { number in
-          switch card.symbol {
-            case .oval:
-              view(for: RoundedRectangle(cornerRadius: 100))
-            case .rectangle:
-              view(for: RoundedRectangle(cornerRadius: 0))
-            case .diamond:
-              view(for: Diamond())
-          }
+        ForEach(0..<card.number.rawValue, id: \.self) { _ in
+          symbol
+            .aspectRatio(2/1, contentMode: .fit)
         }
       }
       .foregroundColor(color)
@@ -31,19 +29,67 @@ struct CardView: View {
     }
   }
 
-  @ViewBuilder
-  func view<T:Shape>(for shape: T) -> some View {
-    ZStack {
-      shape
-        .fill()
-        .opacity(opacity)
-        .padding(2)
-
-      shape
-        .stroke(lineWidth: 4)
+  var fillColor: Color {
+    switch card.status {
+      case .none:
+        return Color.white
+      case .selected:
+        return Color(.systemGray6)
+      case .matched:
+        return Color.green.opacity(0.1)
+      case .mismatched:
+        return Color.pink.opacity(0.2)
     }
-    .aspectRatio(2/1, contentMode: .fit)
-    .padding(.bottom)
+  }
+
+  @ViewBuilder
+  var symbol: some View {
+    switch card.shading {
+      case .filled:
+        filledSymbol
+      case .stroked:
+        strokedSymbol
+      case .shaded:
+        shadedSymbol
+    }
+  }
+
+  @ViewBuilder
+  var strokedSymbol: some View {
+    switch card.symbol {
+      case .oval:
+        RoundedRectangle(cornerRadius: 100)
+          .stroke(lineWidth: 4)
+      case .diamond:
+        Diamond()
+          .stroke(lineWidth: 4)
+      case .rectangle:
+        RoundedRectangle(cornerRadius: 0)
+          .stroke(lineWidth: 4)
+    }
+  }
+
+  @ViewBuilder
+  var filledSymbol: some View {
+    switch card.symbol {
+      case .oval:
+        RoundedRectangle(cornerRadius: 100)
+          .fill()
+      case .diamond:
+        Diamond()
+          .fill()
+      case .rectangle:
+        RoundedRectangle(cornerRadius: 0)
+          .fill()
+    }
+  }
+
+  @ViewBuilder
+  var shadedSymbol: some View {
+    ZStack {
+      filledSymbol.opacity(0.2)
+      strokedSymbol
+    }
   }
 
   var color: Color {
@@ -57,15 +103,8 @@ struct CardView: View {
     }
   }
 
-  var opacity: Double {
-    switch card.shading {
-      case .filled:
-        return 1.0
-      case .outline:
-        return 0.0
-      case .striped:
-        return 0.2
-    }
+  struct DrawingConstants {
+    static let borderColor = Color(.sRGB, red: 150/255, green: 150/255, blue: 150/255, opacity: 0.5)
   }
 }
 
@@ -87,11 +126,14 @@ struct CardView_Previews: PreviewProvider {
   static var previews: some View {
     CardView(
       card: SetGame.Card(
-        symbol: SetGame.Symbol.oval,
+        symbol: SetGame.Symbol.diamond,
         color: SetGame.Color.red,
         number: SetGame.Number.two,
-        shading: SetGame.Shading.outline
+        shading: SetGame.Shading.stroked,
+        status: SetGame.Status.mismatched
       )
     )
+    .frame(width: 150, height: 200)
+    .previewLayout(.sizeThatFits)
   }
 }

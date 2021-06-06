@@ -8,17 +8,41 @@
 import SwiftUI
 
 struct ContentView: View {
-  var game = SetGame()
+  @StateObject private var game = SetGame()
 
   var body: some View {
-    ScrollView {
-      LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))]) {
-        ForEach(game.cards) { card in
-          CardView(card: card)
-            .aspectRatio(2/3, contentMode: .fit)
+    VStack {
+      HStack {
+        Button {
+          game.deal(numberOfCards: 3)
+        } label: {
+          Text("Deal 3 More Cards")
+        }
+        .disabled(game.deck.isEmpty)
+
+        Spacer()
+
+        Button {
+          game.reset()
+        } label: {
+          Text("New Game")
         }
       }
-      .padding()
+      .padding(.horizontal)
+
+      ScrollView {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))]) {
+          ForEach(game.cards) { card in
+            CardView(card: card)
+              .aspectRatio(2/3, contentMode: .fit)
+              .onTapGesture {
+                game.choose(card)
+              }
+          }
+        }
+        .padding()
+      }
+      .onAppear { game.deal(numberOfCards: 12) }
     }
   }
 }
