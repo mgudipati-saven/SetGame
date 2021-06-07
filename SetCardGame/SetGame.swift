@@ -9,7 +9,8 @@ import Foundation
 
 class SetGame: ObservableObject {
   private(set) var deck: [Card]
-
+  private(set) var score = 0
+  
   @Published var cards = [Card]()
 
   private var selectedCardsIndices: [Int] {
@@ -50,13 +51,30 @@ class SetGame: ObservableObject {
     deal(numberOfCards: 12)
   }
 
+  func hint() {
+    var card1index = 0
+    var card2index = 1
+
+    repeat {
+      for card3index in cards.indices {
+        if isSet(indices: [card1index, card2index, card3index]) {
+          cards[card1index].status = .matched
+          cards[card2index].status = .matched
+          cards[card3index].status = .matched
+          return
+        }
+      }
+
+      card1index += 1
+      card2index += 1
+    } while card2index < cards.count
+  }
+
   func choose(_ card: Card) {
     if let chosenIndex = cards.firstIndex(where: { $0.id == card.id }) {
-      print("Selected Cards: \(selectedCardsIndices)")
 
       // if 3 cards are selected and is a matching set...
       if matchedCardsIndices.count == 3 {
-        print("Matching Cards: \(matchedCardsIndices)")
         // select the chosen card if it is not part of the matched set
         if !matchedCardsIndices.contains(chosenIndex) {
           cards[chosenIndex].status = .selected
@@ -78,7 +96,6 @@ class SetGame: ObservableObject {
 
       // if 3 cards are selected and is not a non-maching set...
       if mismatchedCardsIndices.count == 3 {
-        print("Non-Matching Cards: \(mismatchedCardsIndices)")
         // deselect all of them and select the chosen card
         mismatchedCardsIndices.forEach { index in
           cards[index].status = .none
@@ -95,6 +112,7 @@ class SetGame: ObservableObject {
         // if 3 cards are selected, check for matching (is a set?)
         if selectedCardsIndices.count == 3 {
           if isSet(indices: selectedCardsIndices) {
+            score += 1
             selectedCardsIndices.forEach { index in
               cards[index].status = .matched
             }

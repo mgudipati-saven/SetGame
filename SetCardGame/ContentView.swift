@@ -23,6 +23,14 @@ struct ContentView: View {
         Spacer()
 
         Button {
+          game.hint()
+        } label: {
+          Text("Cheat")
+        }
+
+        Spacer()
+
+        Button {
           game.reset()
         } label: {
           Text("New Game")
@@ -31,7 +39,7 @@ struct ContentView: View {
       .padding(.horizontal)
 
       ScrollView {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))]) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 75))]) {
           ForEach(game.cards) { card in
             CardView(card: card)
               .aspectRatio(2/3, contentMode: .fit)
@@ -40,10 +48,18 @@ struct ContentView: View {
               }
           }
         }
-        .padding()
+        .padding(.horizontal)
+        .padding(.vertical, 5)
       }
-      .onAppear { game.deal(numberOfCards: 12) }
+
+      HStack {
+        Text("Score: \(game.score)")
+      }
+      .padding(.top, 3)
+
+      Spacer()
     }
+    .onAppear { game.deal(numberOfCards: 12) }
   }
 }
 
