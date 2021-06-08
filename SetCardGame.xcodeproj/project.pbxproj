@@ -13,6 +13,8 @@
 		13718E452668F0F2007DB6D5 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13718E442668F0F2007DB6D5 /* Preview Assets.xcassets */; };
 		13718E4D2668F168007DB6D5 /* SetGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13718E4C2668F168007DB6D5 /* SetGame.swift */; };
 		13718E512668FFFA007DB6D5 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13718E502668FFFA007DB6D5 /* CardView.swift */; };
+		13E6A4B0266E7C0600196092 /* Diamond.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E6A4AF266E7C0600196092 /* Diamond.swift */; };
+		13E6A4B2266E7DA800196092 /* Squiggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E6A4B1266E7DA800196092 /* Squiggle.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +26,8 @@
 		13718E462668F0F2007DB6D5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		13718E4C2668F168007DB6D5 /* SetGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetGame.swift; sourceTree = "<group>"; };
 		13718E502668FFFA007DB6D5 /* CardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
+		13E6A4AF266E7C0600196092 /* Diamond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diamond.swift; sourceTree = "<group>"; };
+		13E6A4B1266E7DA800196092 /* Squiggle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Squiggle.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +64,8 @@
 				13718E3F2668F0EF007DB6D5 /* ContentView.swift */,
 				13718E4C2668F168007DB6D5 /* SetGame.swift */,
 				13718E502668FFFA007DB6D5 /* CardView.swift */,
+				13E6A4AF266E7C0600196092 /* Diamond.swift */,
+				13E6A4B1266E7DA800196092 /* Squiggle.swift */,
 				13718E412668F0F2007DB6D5 /* Assets.xcassets */,
 				13718E462668F0F2007DB6D5 /* Info.plist */,
 				13718E432668F0F2007DB6D5 /* Preview Content */,
@@ -144,9 +150,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				13E6A4B2266E7DA800196092 /* Squiggle.swift in Sources */,
 				13718E402668F0EF007DB6D5 /* ContentView.swift in Sources */,
 				13718E4D2668F168007DB6D5 /* SetGame.swift in Sources */,
 				13718E3E2668F0EF007DB6D5 /* SetCardGameApp.swift in Sources */,
+				13E6A4B0266E7C0600196092 /* Diamond.swift in Sources */,
 				13718E512668FFFA007DB6D5 /* CardView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

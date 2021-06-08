@@ -49,6 +49,7 @@ class SetGame: ObservableObject {
     deck = SetGame.createDeck()
     cards = []
     deal(numberOfCards: 12)
+    score = 0
   }
 
   func hint() {
@@ -190,7 +191,7 @@ class SetGame: ObservableObject {
   }
 
   enum Symbol: CaseIterable {
-    case oval, rectangle, diamond
+    case oval, squiggle, diamond
   }
 
   enum Shading: CaseIterable {

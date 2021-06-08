@@ -63,8 +63,8 @@ struct CardView: View {
       case .diamond:
         Diamond()
           .stroke(lineWidth: 4)
-      case .rectangle:
-        RoundedRectangle(cornerRadius: 0)
+      case .squiggle:
+        Squiggle()
           .stroke(lineWidth: 4)
     }
   }
@@ -78,8 +78,8 @@ struct CardView: View {
       case .diamond:
         Diamond()
           .fill()
-      case .rectangle:
-        RoundedRectangle(cornerRadius: 0)
+      case .squiggle:
+        Squiggle()
           .fill()
     }
   }
@@ -108,28 +108,14 @@ struct CardView: View {
   }
 }
 
-struct Diamond: Shape {
-  func path(in rect: CGRect) -> Path {
-    var p = Path()
-
-    p.move(to: CGPoint(x: 0, y: rect.midY))
-    p.addLine(to: CGPoint(x: rect.midX, y: 0))
-    p.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
-    p.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
-    p.addLine(to: CGPoint(x: 0, y: rect.midY))
-
-    return p
-  }
-}
-
 struct CardView_Previews: PreviewProvider {
   static var previews: some View {
     CardView(
       card: SetGame.Card(
-        symbol: SetGame.Symbol.diamond,
+        symbol: SetGame.Symbol.squiggle,
         color: SetGame.Color.red,
-        number: SetGame.Number.two,
-        shading: SetGame.Shading.stroked,
+        number: SetGame.Number.three,
+        shading: SetGame.Shading.shaded,
         status: SetGame.Status.mismatched
       )
     )
