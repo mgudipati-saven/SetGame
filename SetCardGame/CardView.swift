@@ -12,34 +12,42 @@ struct CardView: View {
 
   var body: some View {
     ZStack {
-      RoundedRectangle(cornerRadius: 10)
-        .stroke(DrawingConstants.borderColor, lineWidth: 1)
+      if card.isFaceUp {
+        RoundedRectangle(cornerRadius: 10)
+          .fill(Color.white)
 
-      RoundedRectangle(cornerRadius: 10)
-        .fill(fillColor)
+        RoundedRectangle(cornerRadius: 10)
+          .strokeBorder(borderColor, lineWidth: borderWidth)
 
-      VStack {
-        ForEach(0..<card.number.rawValue, id: \.self) { _ in
-          symbol
-            .aspectRatio(2/1, contentMode: .fit)
+        VStack(spacing: 8) {
+          ForEach(0..<card.number.rawValue, id: \.self) { _ in
+            symbol
+              .aspectRatio(2/1, contentMode: .fit)
+          }
         }
+        .foregroundColor(color)
+        .padding(10)
+      } else {
+        RoundedRectangle(cornerRadius: 10)
+          .fill(Color.black)
       }
-      .foregroundColor(color)
-      .padding()
     }
   }
 
-  var fillColor: Color {
-    switch card.status {
-      case .none:
-        return Color.white
-      case .selected:
-        return Color(.systemGray6)
-      case .matched:
-        return Color.green.opacity(0.1)
-      case .mismatched:
-        return Color.pink.opacity(0.2)
+  var borderWidth: CGFloat {
+    return card.isMatched || card.isMismatched || card.isSelected ? 3 : 1
+  }
+
+  var borderColor: Color {
+    if card.isMatched {
+      return DrawingConstants.matchingColor
+    } else if card.isMismatched {
+      return DrawingConstants.mismatchingColor
+    } else if card.isSelected {
+      return DrawingConstants.selectedColor
     }
+
+    return DrawingConstants.borderColor
   }
 
   @ViewBuilder
@@ -105,21 +113,27 @@ struct CardView: View {
 
   struct DrawingConstants {
     static let borderColor = Color(.sRGB, red: 150/255, green: 150/255, blue: 150/255, opacity: 0.5)
+    static let matchingColor = Color.green
+    static let mismatchingColor = Color.red
+    static let selectedColor = Color.black
   }
 }
 
 struct CardView_Previews: PreviewProvider {
   static var previews: some View {
-    CardView(
-      card: SetGame.Card(
-        symbol: SetGame.Symbol.squiggle,
-        color: SetGame.Color.red,
-        number: SetGame.Number.three,
-        shading: SetGame.Shading.shaded,
-        status: SetGame.Status.mismatched
-      )
+    var card = SetGame.Card(
+      symbol: SetGame.Symbol.squiggle,
+      color: SetGame.Color.red,
+      number: SetGame.Number.three,
+      shading: SetGame.Shading.shaded
     )
-    .frame(width: 150, height: 200)
-    .previewLayout(.sizeThatFits)
+    card.isFaceUp = true
+//    card.isSelected = true
+    card.isMatched = true
+//    card.isMismatched = true
+
+    return CardView(card: card)
+      .frame(width: 100, height: 150)
+      .previewLayout(.sizeThatFits)
   }
 }

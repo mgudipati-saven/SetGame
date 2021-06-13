@@ -8,21 +8,21 @@
 import Foundation
 
 class SetGame: ObservableObject {
-  private(set) var deck: [Card]
-  private(set) var score = 0
-  
-  @Published var cards = [Card]()
+  @Published var deck: [Card]
+  @Published var cardsInGame = [Card]()
+  @Published var discardedCards = [Card]()
+  @Published var score = 0
 
-  private var selectedCardsIndices: [Int] {
-    cards.indices.filter { cards[$0].status == .selected }
+  var selectedCardsIndices: [Int] {
+    cardsInGame.indices.filter { cardsInGame[$0].isSelected }
   }
 
-  private var matchedCardsIndices: [Int] {
-    cards.indices.filter { cards[$0].status == .matched }
+  var matchedCardsIndices: [Int] {
+    cardsInGame.indices.filter { cardsInGame[$0].isMatched }
   }
 
-  private var mismatchedCardsIndices: [Int] {
-    cards.indices.filter { cards[$0].status == .mismatched }
+  var mismatchedCardsIndices: [Int] {
+    cardsInGame.indices.filter { cardsInGame[$0].isMismatched }
   }
 
   init() {
@@ -36,7 +36,7 @@ class SetGame: ObservableObject {
       Color.allCases.forEach { color in
         Shading.allCases.forEach { shading in
           Number.allCases.forEach { number in
-            cards.append(Card(symbol: symbol, color: color, number: number, shading: shading, status: Status.none))
+            cards.append(Card(symbol: symbol, color: color, number: number, shading: shading))
           }
         }
       }
@@ -47,50 +47,80 @@ class SetGame: ObservableObject {
 
   func reset() {
     deck = SetGame.createDeck()
-    cards = []
-    deal(numberOfCards: 12)
+    cardsInGame = []
+    discardedCards = []
     score = 0
   }
 
   func hint() {
+    // clear all states
+    for index in cardsInGame.indices {
+      cardsInGame[index].isMatched = false
+      cardsInGame[index].isMismatched = false
+      cardsInGame[index].isSelected = false
+    }
+
     var card1index = 0
     var card2index = 1
 
     repeat {
-      for card3index in cards.indices {
+      for card3index in cardsInGame.indices {
         if isSet(indices: [card1index, card2index, card3index]) {
-          cards[card1index].status = .matched
-          cards[card2index].status = .matched
-          cards[card3index].status = .matched
+          cardsInGame[card1index].isMatched = true
+          cardsInGame[card2index].isMatched = true
+          cardsInGame[card3index].isMatched = true
           return
         }
       }
 
       card1index += 1
       card2index += 1
-    } while card2index < cards.count
+    } while card2index < cardsInGame.count
+  }
+
+  func deal12() {
+    guard deck.count >= 12 else { return }
+    deal(numberOfCards: 12)
+  }
+
+  func deal3() {
+    guard deck.count >= 3 else { return }
+
+    if matchedCardsIndices.count == 3 {
+      matchedCardsIndices.forEach { index in
+        discardedCards.append(cardsInGame[index])
+        cardsInGame[index] = deck.removeFirst()
+        cardsInGame[index].isFaceUp = true
+      }
+    } else {
+      deal()
+    }
+  }
+
+  private func deal(numberOfCards: Int = 3) {
+    for _ in 1...numberOfCards {
+      var card = deck.removeFirst()
+      card.isFaceUp = true
+      cardsInGame.append(card)
+    }
   }
 
   func choose(_ card: Card) {
-    if let chosenIndex = cards.firstIndex(where: { $0.id == card.id }) {
+    if let chosenIndex = cardsInGame.firstIndex(where: { $0.id == card.id }) {
 
       // if 3 cards are selected and is a matching set...
       if matchedCardsIndices.count == 3 {
         // select the chosen card if it is not part of the matched set
         if !matchedCardsIndices.contains(chosenIndex) {
-          cards[chosenIndex].status = .selected
+          cardsInGame[chosenIndex].isSelected = true
         }
 
-        // if deck is not empty, replace with new ones
-        if !deck.isEmpty {
-          matchedCardsIndices.forEach { index in
-            cards[index] = deck.remove(at: 0)
-          }
-        } else {
-          // deck is empty, remove the set
-          let offsets = IndexSet(matchedCardsIndices)
-          cards.remove(atOffsets: offsets)
+        // move the matched cards to discard pile
+        let offsets = IndexSet(matchedCardsIndices)
+        for index in offsets {
+          discardedCards.append(cardsInGame[index])
         }
+        cardsInGame.remove(atOffsets: offsets)
 
         return
       }
@@ -99,27 +129,28 @@ class SetGame: ObservableObject {
       if mismatchedCardsIndices.count == 3 {
         // deselect all of them and select the chosen card
         mismatchedCardsIndices.forEach { index in
-          cards[index].status = .none
+          cardsInGame[index].isSelected = false
+          cardsInGame[index].isMismatched = false
         }
-        cards[chosenIndex].status = .selected
+        cardsInGame[chosenIndex].isSelected = true
 
         return
       }
 
       // "selection". if 1 or 2 cards in selection, allow "deselection"
       if selectedCardsIndices.count < 3 {
-        cards[chosenIndex].status = cards[chosenIndex].status == .selected ? .none : .selected
+        cardsInGame[chosenIndex].isSelected.toggle()
 
         // if 3 cards are selected, check for matching (is a set?)
         if selectedCardsIndices.count == 3 {
           if isSet(indices: selectedCardsIndices) {
             score += 1
             selectedCardsIndices.forEach { index in
-              cards[index].status = .matched
+              cardsInGame[index].isMatched = true
             }
           } else {
             selectedCardsIndices.forEach { index in
-              cards[index].status = .mismatched
+              cardsInGame[index].isMismatched = true
             }
           }
         }
@@ -128,21 +159,19 @@ class SetGame: ObservableObject {
   }
 
   private func isSet(indices: [Int]) -> Bool {
-    if indices.count == 3 {
-      let card1 = cards[indices[0]]
-      let card2 = cards[indices[1]]
-      let card3 = cards[indices[2]]
+    let card1 = cardsInGame[indices[0]]
+    let card2 = cardsInGame[indices[1]]
+    let card3 = cardsInGame[indices[2]]
 
-      // check if they all have same number or all different numbers
-      if haveSameNumber(card1, card2, card3) || haveDifferentNumbers(card1, card2, card3) {
-        // check if they all have same symbol or all different symbols
-        if haveSameSymbol(card1, card2, card3) || haveDifferentSymbols(card1, card2, card3) {
-          // check if they all have same symbol or all different shading
-          if haveSameShading(card1, card2, card3) || haveDifferentShadings(card1, card2, card3) {
-            // check if they all have same symbol or all different symbols
-            if haveSameColor(card1, card2, card3) || haveDifferentColors(card1, card2, card3) {
-              return true
-            }
+    // check if they all have same number or all different numbers
+    if haveSameNumber(card1, card2, card3) || haveDifferentNumbers(card1, card2, card3) {
+      // check if they all have same symbol or all different symbols
+      if haveSameSymbol(card1, card2, card3) || haveDifferentSymbols(card1, card2, card3) {
+        // check if they all have same symbol or all different shading
+        if haveSameShading(card1, card2, card3) || haveDifferentShadings(card1, card2, card3) {
+          // check if they all have same symbol or all different symbols
+          if haveSameColor(card1, card2, card3) || haveDifferentColors(card1, card2, card3) {
+            return true
           }
         }
       }
@@ -183,13 +212,6 @@ class SetGame: ObservableObject {
     (card1.color != card2.color && card2.color != card3.color && card3.color != card1.color) ? true : false
   }
 
-  func deal(numberOfCards: Int) {
-    let numberOfCardsToDeal = min(numberOfCards, deck.count)
-    for _ in 0..<numberOfCardsToDeal {
-      cards.append(deck.removeFirst())
-    }
-  }
-
   enum Symbol: CaseIterable {
     case oval, squiggle, diamond
   }
@@ -202,10 +224,6 @@ class SetGame: ObservableObject {
     case red, green, purple
   }
 
-  enum Status {
-    case none, selected, matched, mismatched
-  }
-
   enum Number: Int, CaseIterable {
     case one = 1, two, three
   }
@@ -216,6 +234,9 @@ class SetGame: ObservableObject {
     let color: Color
     let number: Number
     let shading: Shading
-    var status: Status
+    var isFaceUp: Bool = false
+    var isMatched: Bool = false
+    var isSelected: Bool = false
+    var isMismatched: Bool = false
   }
 }
